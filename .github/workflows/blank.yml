@@ -52,6 +52,6 @@ jobs:
           terraform plan
 
 # Uncomment the following to apply changes automatically (use with caution)
-#       - name: terraform apply
-#         run: 
-#           terraform apply -auto-approve
+      - name: terraform apply
+        run: 
+          terraform apply -auto-approve
