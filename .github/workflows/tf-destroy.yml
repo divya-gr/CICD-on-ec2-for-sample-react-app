@@ -1,4 +1,4 @@
-name: GitHub terraform
+name: GitHub terraform -destroy
 
 on:
   workflow_dispatch: 
