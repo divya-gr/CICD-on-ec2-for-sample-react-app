@@ -4,9 +4,11 @@ resource "aws_instance" "main" {
   associate_public_ip_address = true
   subnet_id            = var.subnet_id
   security_groups      = [var.security_group_id]
-
   user_data = <<-EOF
               #!/bin/bash
+              exec > /var/log/user-data.log 2>&1
+              set -x
+
               # Update the server
               sudo apt update -y
               sudo apt install -y nginx nodejs npm git
@@ -66,11 +68,9 @@ resource "aws_instance" "main" {
               sudo apt install -y certbot python3-certbot-nginx
               sudo certbot --nginx --non-interactive --agree-tos --email divya@example.com -d rev-token.blockchainaustralia.link
 
-              # Clean up
-              # sudo rm -rf /var/www/html/rev-token/package-lock.json  
-
               EOF
 
+ 
   tags = {
     Name = "web-server"
   }
