@@ -6,25 +6,45 @@ resource "aws_instance" "main" {
   security_groups      = [var.security_group_id]
   user_data = <<-EOF
               #!/bin/bash
+              # Log output to /var/log/user-data.log for debugging
               exec > /var/log/user-data.log 2>&1
               set -x
 
-              # Update the server
+              # Step 1: Update the server
               sudo apt update -y
-              sudo apt install -y nginx nodejs npm git
 
-              # Clone the React app repository
+              # Step 2: Install NGINX
+              sudo apt install -y nginx
+              # Verify NGINX installation
+              nginx -v
+
+              # Step 3: Install Node.js
+              sudo apt install -y nodejs
+              # Verify Node.js installation
+              node -v
+
+              # Step 4: Install npm
+              sudo apt install -y npm
+              # Verify npm installation
+              npm -v
+
+              # Step 5: Install Git
+              sudo apt install -y git
+              # Verify Git installation
+              git --version
+
+              # Step 6: Clone the React app repository
               sudo mkdir -p /var/www/html
               sudo git clone https://gitlab.com/decrypt-development/rev-token.git /var/www/html/rev-token
 
               # Navigate to the app directory
               cd /var/www/html/rev-token
 
-              # Install dependencies and build the app
+              # Step 7: Install dependencies and build the React app
               sudo npm install --legacy-peer-deps
               sudo npm run build
 
-              # Configure Nginx
+              # Step 8: Configure NGINX
               sudo tee /etc/nginx/sites-available/rev-token.conf > /dev/null <<NGINXCONF
               server {
                   server_name rev-token.blockchainaustralia.link;
@@ -59,15 +79,17 @@ resource "aws_instance" "main" {
               }
               NGINXCONF
 
-              # Enable the new Nginx configuration
+              # Enable the new NGINX configuration
               sudo ln -s /etc/nginx/sites-available/rev-token.conf /etc/nginx/sites-enabled
               sudo nginx -t
               sudo systemctl reload nginx
 
-              # Install Certbot and obtain SSL certificate
+              # Step 9: Install Certbot and obtain SSL certificate
               sudo apt install -y certbot python3-certbot-nginx
               sudo certbot --nginx --non-interactive --agree-tos --email divya@example.com -d rev-token.blockchainaustralia.link
 
+              # Final message
+              echo "Deployment completed."
               EOF
 
  
