@@ -23,7 +23,7 @@ resource "aws_instance" "main" {
               sudo npm run build
 
               # Configure Nginx
-              sudo tee /etc/nginx/sites-available/rev-token.conf > /dev/null <<EOF
+              sudo tee /etc/nginx/sites-available/rev-token.conf > /dev/null <<NGINXCONF
               server {
                   server_name rev-token.blockchainaustralia.link;
                   root /var/www/html/rev-token/build;
@@ -35,7 +35,7 @@ resource "aws_instance" "main" {
                   }
 
                   location /api {
-                      proxy_pass https://0.0.0.0:3000;
+                      proxy_pass http://0.0.0.0:3000;
                       proxy_http_version 1.1;
                       proxy_set_header Upgrade \$http_upgrade;
                       proxy_set_header Connection 'upgrade';
@@ -55,7 +55,7 @@ resource "aws_instance" "main" {
                       expires 1d;
                   }
               }
-              EOF
+              NGINXCONF
 
               # Enable the new Nginx configuration
               sudo ln -s /etc/nginx/sites-available/rev-token.conf /etc/nginx/sites-enabled
@@ -67,7 +67,7 @@ resource "aws_instance" "main" {
               sudo certbot --nginx --non-interactive --agree-tos --email divya@example.com -d rev-token.blockchainaustralia.link
 
               # Clean up
-        #      sudo rm -rf /var/www/html/rev-token/package-lock.json  
+              # sudo rm -rf /var/www/html/rev-token/package-lock.json  
 
               EOF
 
