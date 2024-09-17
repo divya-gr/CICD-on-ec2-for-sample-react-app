@@ -4,6 +4,7 @@ resource "aws_instance" "main" {
   associate_public_ip_address = true
   subnet_id            = var.subnet_id
   security_groups      = [var.security_group_id]
+
   user_data = <<-EOF
               #!/bin/bash
               # Log output to /var/log/user-data.log for debugging
@@ -38,7 +39,7 @@ resource "aws_instance" "main" {
               sudo git clone https://github.com/aditya-sridhar/simple-reactjs-app.git /var/www/html/simple-reactjs-app
 
               # Navigate to the app directory
-              cd /var/www/html/rev-token
+              cd /var/www/html/simple-reactjs-app
 
               # Step 7: Install dependencies and build the React app
               sudo npm install --legacy-peer-deps
@@ -48,7 +49,7 @@ resource "aws_instance" "main" {
               sudo tee /etc/nginx/sites-available/rev-token.conf > /dev/null <<NGINXCONF
               server {
                   server_name rev-token.blockchainaustralia.link;
-                  root /var/www/html/rev-token/build;
+                  root /var/www/html/simple-reactjs-app/build;
                   index index.html;
                   client_max_body_size 900M;
 
@@ -92,7 +93,6 @@ resource "aws_instance" "main" {
               echo "Deployment completed."
               EOF
 
- 
   tags = {
     Name = "web-server"
   }
