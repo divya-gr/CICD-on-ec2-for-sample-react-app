@@ -35,7 +35,7 @@ resource "aws_instance" "main" {
 
               # Step 6: Clone the React app repository
               sudo mkdir -p /var/www/html
-              sudo git clone https://gitlab.com/decrypt-development/rev-token.git /var/www/html/rev-token
+              sudo git clone https://github.com/aditya-sridhar/simple-reactjs-app.git /var/www/html/simple-reactjs-app
 
               # Navigate to the app directory
               cd /var/www/html/rev-token
