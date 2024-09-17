@@ -1,4 +1,4 @@
-ami           = "ami-05842291b9a0bd79f" # Use a suitable AMI for your region
+ami           = "ami-0e86e20dae9224db8" # Use a suitable AMI for your region
 instance_type = "t2.micro"
 vpc_cidr = "10.0.0.0/16"
 vpc_name = "vpc-testing"
