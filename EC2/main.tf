@@ -1,17 +1,15 @@
-
 resource "aws_instance" "main" {
-  ami= var.ami
-  instance_type = var.instance_type
+  ami                  = var.ami
+  instance_type        = var.instance_type
   associate_public_ip_address = true
+  subnet_id            = var.subnet_id
+  security_groups      = [var.security_group_id]
 
-  subnet_id       = var.subnet_id
-  security_groups = [var.security_group_id]
   user_data = <<-EOF
               #!/bin/bash
               # Update the server
               sudo apt update -y
-              
-              sudo apt install -y nginx nodejs npm
+              sudo apt install -y nginx nodejs npm git
 
               # Clone the React app repository
               sudo mkdir -p /var/www/html
@@ -25,7 +23,7 @@ resource "aws_instance" "main" {
               sudo npm run build
 
               # Configure Nginx
-              sudo tee /etc/nginx/sites-available/rev-token.conf <<EOF
+              sudo tee /etc/nginx/sites-available/rev-token.conf > /dev/null <<EOF
               server {
                   server_name rev-token.blockchainaustralia.link;
                   root /var/www/html/rev-token/build;
@@ -66,15 +64,14 @@ resource "aws_instance" "main" {
 
               # Install Certbot and obtain SSL certificate
               sudo apt install -y certbot python3-certbot-nginx
-              sudo certbot --nginx --non-interactive --agree-tos --email divya@example.com
+              sudo certbot --nginx --non-interactive --agree-tos --email divya@example.com -d rev-token.blockchainaustralia.link
 
               # Clean up
-              sudo rm -rf /var/www/html/rev-token/package-lock.json
+        #      sudo rm -rf /var/www/html/rev-token/package-lock.json  
 
               EOF
+
   tags = {
     Name = "web-server"
   }
-
-  
 }
