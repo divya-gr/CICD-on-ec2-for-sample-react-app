@@ -1,0 +1,56 @@
+name: GitHub terraform
+
+on:
+  workflow_dispatch: 
+
+env: 
+  aws-region: us-east-1
+
+jobs:
+  terraform:
+    name: terraform 
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./module
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+         
+      - name: Terraform HasiCorp SetUp
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.1.7
+
+      - name: AWS Credentials Configuration
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+      - name: terraform format
+        run: 
+          terraform fmt
+      
+      - name: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=aws-ec2-pipeline-tf-state" \
+            -backend-config="key=testingec2/terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=terraform-lock-table"
+      - name: terraform validate
+        run: 
+          terraform validate
+
+      - name: terraform plan
+        run: 
+          terraform plan
+
+# Uncomment the following to apply changes automatically (use with caution)
+      - name: terraform destroy
+        run: 
+          terraform destroy -auto-approve
