@@ -55,7 +55,7 @@ resource "aws_instance" "main" {
                       expires 1d;
                   }
               }
-              EOF
+              
 
               # Enable the new Nginx configuration
               sudo ln -s /etc/nginx/sites-available/rev-token.conf /etc/nginx/sites-enabled
