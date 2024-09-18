@@ -88,7 +88,7 @@ resource "aws_instance" "main" {
              cat <<EOF >/etc/nginx/sites-available/wordpress
              server {
                  listen 80;
-                 server_name your_domain_or_IP;
+                 server_name localhost;
 
                  root /var/www/html;
                  index index.php index.html index.htm;
