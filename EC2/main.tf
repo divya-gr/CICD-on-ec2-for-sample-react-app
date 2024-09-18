@@ -12,28 +12,35 @@ resource "aws_instance" "main" {
     # USE ELASTIC IP ADDRESS AND ALLOW SSH, HTTP, AND HTTPS REQUESTS IN SECURITY GROUP
     # by Dev Bhusal
 
+    # MySQL and WordPress configuration variables
     db_root_password="PassWord4-root"
     db_username="wordpress_user"
     db_user_password="PassWord4-user"
     db_name="wordpress_db"
 
-    apt update -y
-    apt upgrade -y
+    # Update system packages and upgrade
+    apt update -y && apt upgrade -y
 
-    # Install LEMP Stack
+    # Install LEMP Stack (Nginx, PHP, MySQL)
     apt install -y nginx
     apt install -y php-fpm php-mysql php-{pear,cgi,common,curl,mbstring,gd,mysqlnd,bcmath,json,xml,intl,zip,imap,imagick}
-    apt install -y mysql-server mysql-common
+    apt install -y mysql-server
 
-    systemctl enable --now nginx
-    systemctl enable --now mysql
+    # Start and enable Nginx and MySQL services
+    systemctl enable nginx
+    systemctl start nginx
+    systemctl enable mysql
+    systemctl start mysql
 
     # MySQL configuration
     systemctl stop mysql
-    mkdir /var/run/mysqld
+    mkdir -p /var/run/mysqld
     chown mysql:mysql /var/run/mysqld
-    mysqld_safe --skip-grant-tables >res 2>&1 &
+    mysqld_safe --skip-grant-tables &
 
+    sleep 5  # Give MySQL time to start in safe mode
+
+    # Reset root password and create new user/database
     mysql -uroot -e "UPDATE mysql.user SET authentication_string=null WHERE User='root';"
     mysql -uroot -e "UPDATE mysql.user SET plugin='mysql_native_password' WHERE User='root'; FLUSH PRIVILEGES;"
 
@@ -59,16 +66,17 @@ resource "aws_instance" "main" {
     sed -i "s/username_here/$db_username/g" wp-config.php
     sed -i "s/password_here/$db_user_password/g" wp-config.php
 
-    # Set permissions
+    # Set appropriate permissions for WordPress files
     chown -R www-data:www-data /var/www/html
     chmod -R 755 /var/www/html
 
+    # Additional WordPress configurations
     cat <<EOT >>/var/www/html/wp-config.php
     define('FS_METHOD', 'direct');
     define('WP_MEMORY_LIMIT', '256M');
     EOT
 
-    # Configure Nginx
+    # Configure Nginx for WordPress
     cat <<EOT >/etc/nginx/sites-available/wordpress
     server {
         listen 80;
@@ -97,11 +105,13 @@ resource "aws_instance" "main" {
     }
     EOT
 
+    # Enable the new Nginx configuration and reload the service
     ln -s /etc/nginx/sites-available/wordpress /etc/nginx/sites-enabled/
     rm /etc/nginx/sites-enabled/default
     nginx -t
     systemctl reload nginx
     systemctl restart php7.4-fpm
+
     echo "WordPress installed successfully!"
   EOF
 
