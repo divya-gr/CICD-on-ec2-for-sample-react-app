@@ -21,9 +21,16 @@ resource "aws_instance" "main" {
     # Update system packages and upgrade
     apt update -y && apt upgrade -y
 
-    # Install LEMP Stack (Nginx, PHP, MySQL)
+    # Install software-properties-common for adding PPA
+    apt install -y software-properties-common
+
+    # Add repository for PHP 8.1
+    add-apt-repository ppa:ondrej/php
+    apt update
+
+    # Install LEMP Stack (Nginx, PHP 8.1, MySQL)
     apt install -y nginx
-    apt install -y php-fpm php-mysql php-{pear,cgi,common,curl,mbstring,gd,mysqlnd,bcmath,json,xml,intl,zip,imap,imagick}
+    apt install -y php8.1-fpm php8.1-mysql php8.1-cli php8.1-curl php8.1-gd php8.1-xml php8.1-mbstring
     apt install -y mysql-server
 
     # Start and enable Nginx and MySQL services
@@ -90,7 +97,7 @@ resource "aws_instance" "main" {
 
         location ~ \.php\$ {
             include snippets/fastcgi-php.conf;
-            fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+            fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
             include fastcgi_params;
         }
@@ -110,7 +117,7 @@ resource "aws_instance" "main" {
     rm /etc/nginx/sites-enabled/default
     nginx -t
     systemctl reload nginx
-    systemctl restart php7.4-fpm
+    systemctl restart php8.1-fpm
 
     echo "WordPress installed successfully!"
   EOF
